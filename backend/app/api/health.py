@@ -29,3 +29,4 @@ def users_health(db: Session = Depends(get_db)):
         "status": "healthy",
         "users_count": count,
     }
+
