@@ -9,6 +9,8 @@ from app.api.auth import router as auth_router
 
 from app.api.users import router as users_router
 
+from app.api.tasks import router as tasks_router
+
 setup_logging()
 
 
@@ -46,6 +48,11 @@ app.include_router(
 
 app.include_router(
     users_router,
+    prefix=settings.API_PREFIX,
+)
+
+app.include_router(
+    tasks_router,
     prefix=settings.API_PREFIX,
 )
 
