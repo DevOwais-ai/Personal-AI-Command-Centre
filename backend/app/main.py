@@ -5,6 +5,7 @@ from app.api.health import router as health_router
 from app.core.config import settings
 from app.core.logging import setup_logging
 
+from app.api.auth import router as auth_router
 
 setup_logging()
 
@@ -36,6 +37,10 @@ app.include_router(
     prefix=settings.API_PREFIX,
 )
 
+app.include_router(
+    auth_router,
+    prefix=settings.API_PREFIX,
+)
 
 @app.get("/")
 def root():
@@ -45,3 +50,4 @@ def root():
         "environment": settings.APP_ENV,
         "status": "running",
     }
+
