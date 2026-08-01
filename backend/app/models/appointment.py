@@ -9,11 +9,20 @@ from app.database.base import Base
 class Appointment(Base):
     __tablename__ = "appointments"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
+    )
+
+    contact_id: Mapped[int | None] = mapped_column(
+        ForeignKey("contacts.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
 
@@ -72,7 +81,15 @@ class Appointment(Base):
         nullable=False,
     )
 
-    user = relationship("User", back_populates="appointments")
+    user = relationship(
+        "User",
+        back_populates="appointments",
+    )
+
+    contact = relationship(
+        "Contact",
+        back_populates="appointments",
+    )
 
     reminders = relationship(
         "Reminder",

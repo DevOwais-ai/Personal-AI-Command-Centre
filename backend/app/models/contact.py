@@ -62,3 +62,9 @@ class Contact(Base):
         back_populates="contact",
         cascade="all, delete-orphan",
     )
+
+    appointments = relationship(
+        "Appointment",
+        back_populates="contact",
+        cascade="all, delete-orphan",
+    )
