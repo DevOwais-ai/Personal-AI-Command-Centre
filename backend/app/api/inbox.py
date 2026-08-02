@@ -18,8 +18,14 @@ from app.services.inbox_service import (
     mark_message_unread,
 )
 
-from app.schemas.ai_message import AIMessageAnalysis
-from app.services.ai_message_service import save_ai_analysis
+from app.schemas.ai_message import (
+    AIMessageAnalysis,
+    AIMessageAnalysisResponse,
+)
+from app.services.ai_message_service import (
+    analyze_and_save_message,
+    save_ai_analysis,
+)
 
 router = APIRouter(
     prefix="/inbox",
@@ -203,4 +209,40 @@ def analyze_message(
         db=db,
         message=message,
         analysis=analysis,
+    )
+
+@router.post(
+    "/messages/{message_id}/analyze",
+    response_model=AIMessageAnalysisResponse,
+)
+def analyze_message_with_ai(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    message = analyze_and_save_message(
+    db=db,
+    message=message,
+    )
+
+    return AIMessageAnalysisResponse(
+        message_id=message.id,
+        ai_summary=message.ai_summary,
+        ai_category=message.ai_category,
+        ai_priority=message.ai_priority,
+        ai_intent=message.ai_intent,
+        ai_action_required=message.ai_action_required,
+        ai_processed=message.ai_processed,
     )

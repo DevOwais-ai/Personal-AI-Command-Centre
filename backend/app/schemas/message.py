@@ -48,6 +48,7 @@ class MessageResponse(BaseModel):
     ai_intent: str | None
     ai_action_required: bool
     ai_processed: bool
+    ai_status: str
     received_at: datetime
     created_at: datetime
 

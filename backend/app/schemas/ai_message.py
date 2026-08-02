@@ -22,3 +22,13 @@ class AIMessageAnalysis(BaseModel):
     )
 
     action_required: bool
+
+
+class AIMessageAnalysisResponse(BaseModel):
+    message_id: int
+    ai_summary: str | None
+    ai_category: str | None
+    ai_priority: str | None
+    ai_intent: str | None
+    ai_action_required: bool
+    ai_processed: bool

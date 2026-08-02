@@ -115,6 +115,13 @@ class Message(Base):
             
         )
 
+    ai_status: Mapped[str] = mapped_column(
+        String(20),
+        default="pending",
+        nullable=False,
+        index=True,
+        )
+    
     received_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow,
         nullable=False,

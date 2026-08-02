@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
@@ -20,7 +21,7 @@ from app.services.message_service import (
     create_message,
     get_messages,
 )
-
+from app.services.ai_message_service import analyze_and_save_message
 
 router = APIRouter(
     prefix="/conversations",
@@ -64,15 +65,24 @@ def list_conversations(
 )
 def create_new_message(
     data: MessageCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        return create_message(
+        message = create_message(
             db=db,
             user_id=current_user.id,
             data=data,
         )
+
+        background_tasks.add_task(
+            analyze_and_save_message,
+            db,
+            message,
+        )
+
+        return message
 
     except ValueError as exc:
         raise HTTPException(
