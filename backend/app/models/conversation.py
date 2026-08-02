@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -9,16 +9,13 @@ from app.database.base import Base
 class Conversation(Base):
     __tablename__ = "conversations"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-
-    integration_id: Mapped[int] = mapped_column(
-        ForeignKey("integrations.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -32,11 +29,13 @@ class Conversation(Base):
     platform: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
+        index=True,
     )
 
-    external_conversation_id: Mapped[str | None] = mapped_column(
+    external_id: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
+        index=True,
     )
 
     title: Mapped[str | None] = mapped_column(
@@ -50,23 +49,24 @@ class Conversation(Base):
         nullable=False,
     )
 
+    last_message_at: Mapped[datetime | None] = mapped_column(
+        nullable=True,
+        index=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
         default=datetime.utcnow,
         nullable=False,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False,
     )
 
-    user = relationship("User", back_populates="conversations")
-
-    integration = relationship(
-        "Integration",
+    user = relationship(
+        "User",
         back_populates="conversations",
     )
 

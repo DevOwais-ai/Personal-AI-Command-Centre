@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -9,25 +9,54 @@ from app.database.base import Base
 class Message(Base):
     __tablename__ = "messages"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+    )
 
-    conversation_id: Mapped[int] = mapped_column(
-        ForeignKey("conversations.id", ondelete="CASCADE"),
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    external_message_id: Mapped[str | None] = mapped_column(
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "conversations.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    platform: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        index=True,
+    )
+
+    external_id: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+        index=True,
+    )
+
+    direction: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    sender_name: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )
 
-    sender: Mapped[str | None] = mapped_column(
+    sender_identifier: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )
 
-    receiver: Mapped[str | None] = mapped_column(
+    recipient_identifier: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )
@@ -38,32 +67,19 @@ class Message(Base):
     )
 
     message_type: Mapped[str] = mapped_column(
-        String(50),
+        String(30),
         default="text",
         nullable=False,
     )
 
     is_read: Mapped[bool] = mapped_column(
-        Boolean,
         default=False,
         nullable=False,
     )
 
     is_important: Mapped[bool] = mapped_column(
-        Boolean,
         default=False,
         nullable=False,
-    )
-
-    priority: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        nullable=False,
-    )
-
-    ai_category: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
     )
 
     ai_summary: Mapped[str | None] = mapped_column(
@@ -71,19 +87,13 @@ class Message(Base):
         nullable=True,
     )
 
-    requires_response: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
+    received_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
         nullable=False,
-    )
-
-    sent_at: Mapped[datetime | None] = mapped_column(
-        DateTime,
-        nullable=True,
+        index=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
         default=datetime.utcnow,
         nullable=False,
     )

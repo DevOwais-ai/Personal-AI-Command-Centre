@@ -15,6 +15,8 @@ from app.api.appointments import router as appointments_router
 
 from app.api.reminders import router as reminders_router
 
+from app.api.contacts import router as contacts_router
+
 setup_logging()
 
 
@@ -67,6 +69,11 @@ app.include_router(
 
 app.include_router(
     reminders_router,
+    prefix=settings.API_PREFIX,
+)
+
+app.include_router(
+    contacts_router,
     prefix=settings.API_PREFIX,
 )
 
