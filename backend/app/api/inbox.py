@@ -1,0 +1,167 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.api.dependencies import get_current_user
+from app.database.dependencies import get_db
+from app.models.user import User
+from app.schemas.inbox import (
+    InboxMessageResponse,
+    InboxStatsResponse,
+)
+from app.services.inbox_service import (
+    get_inbox_messages,
+    get_inbox_stats,
+    get_message,
+    mark_message_important,
+    mark_message_read,
+    mark_message_unimportant,
+    mark_message_unread,
+)
+
+
+router = APIRouter(
+    prefix="/inbox",
+    tags=["Unified Inbox"],
+)
+
+@router.get(
+    "/messages",
+    response_model=list[InboxMessageResponse],
+)
+def inbox_messages(
+    platform: str | None = None,
+    unread_only: bool = False,
+    important_only: bool = False,
+    search: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_inbox_messages(
+        db=db,
+        user_id=current_user.id,
+        platform=platform,
+        unread_only=unread_only,
+        important_only=important_only,
+        search=search,
+        limit=min(limit, 100),
+        offset=offset,
+    )
+
+@router.get(
+    "/stats",
+    response_model=InboxStatsResponse,
+)
+def inbox_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_inbox_stats(
+        db=db,
+        user_id=current_user.id,
+    )
+
+@router.patch(
+    "/messages/{message_id}/read",
+    response_model=InboxMessageResponse,
+)
+def read_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return mark_message_read(
+        db=db,
+        message=message,
+    )
+
+@router.patch(
+    "/messages/{message_id}/unread",
+    response_model=InboxMessageResponse,
+)
+def unread_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return mark_message_unread(
+        db=db,
+        message=message,
+    )
+
+@router.patch(
+    "/messages/{message_id}/important",
+    response_model=InboxMessageResponse,
+)
+def important_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return mark_message_important(
+        db=db,
+        message=message,
+    )
+
+@router.patch(
+    "/messages/{message_id}/unimportant",
+    response_model=InboxMessageResponse,
+)
+def unimportant_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return mark_message_unimportant(
+        db=db,
+        message=message,
+    )

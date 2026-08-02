@@ -19,6 +19,8 @@ from app.api.contacts import router as contacts_router
 
 from app.api.conversations import router as conversations_router
 
+from app.api.inbox import router as inbox_router
+
 setup_logging()
 
 
@@ -81,6 +83,11 @@ app.include_router(
 
 app.include_router(
     conversations_router,
+    prefix=settings.API_PREFIX,
+)
+
+app.include_router(
+    inbox_router,
     prefix=settings.API_PREFIX,
 )
 
