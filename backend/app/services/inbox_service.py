@@ -11,6 +11,10 @@ def get_inbox_messages(
     unread_only: bool = False,
     important_only: bool = False,
     search: str | None = None,
+    priority: str | None = None,
+    category: str | None = None,
+    intent: str | None = None,
+    action_required: bool | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> list[Message]:
@@ -40,6 +44,26 @@ def get_inbox_messages(
             Message.content.ilike(
                 f"%{search}%"
             )
+        )
+
+    if priority:
+        query = query.filter(
+            Message.ai_priority == priority
+        )
+
+    if category:
+        query = query.filter(
+            Message.ai_category == category
+        )
+
+    if intent:
+        query = query.filter(
+            Message.ai_intent == intent
+        )
+
+    if action_required is not None:
+        query = query.filter(
+            Message.ai_action_required == action_required
         )
 
     return (

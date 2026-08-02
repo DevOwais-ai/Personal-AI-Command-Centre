@@ -23,6 +23,12 @@ class InboxMessageResponse(BaseModel):
 
     ai_summary: str | None
 
+    ai_category: str | None
+    ai_priority: str | None
+    ai_intent: str | None
+    ai_action_required: bool
+    ai_processed: bool
+
     received_at: datetime
 
     model_config = ConfigDict(

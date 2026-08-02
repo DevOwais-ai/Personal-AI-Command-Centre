@@ -18,6 +18,8 @@ from app.services.inbox_service import (
     mark_message_unread,
 )
 
+from app.schemas.ai_message import AIMessageAnalysis
+from app.services.ai_message_service import save_ai_analysis
 
 router = APIRouter(
     prefix="/inbox",
@@ -33,6 +35,10 @@ def inbox_messages(
     unread_only: bool = False,
     important_only: bool = False,
     search: str | None = None,
+    priority: str | None = None,
+    category: str | None = None,
+    intent: str | None = None,
+    action_required: bool | None = None,
     limit: int = 50,
     offset: int = 0,
     db: Session = Depends(get_db),
@@ -45,6 +51,10 @@ def inbox_messages(
         unread_only=unread_only,
         important_only=important_only,
         search=search,
+        priority=priority,
+        category=category,
+        intent=intent,
+        action_required=action_required,
         limit=min(limit, 100),
         offset=offset,
     )
@@ -164,4 +174,33 @@ def unimportant_message(
     return mark_message_unimportant(
         db=db,
         message=message,
+    )
+
+
+@router.patch(
+    "/messages/{message_id}/analysis",
+    response_model=InboxMessageResponse,
+)
+def analyze_message(
+    message_id: int,
+    analysis: AIMessageAnalysis,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    return save_ai_analysis(
+        db=db,
+        message=message,
+        analysis=analysis,
     )

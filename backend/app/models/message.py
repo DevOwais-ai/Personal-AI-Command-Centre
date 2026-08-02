@@ -83,9 +83,37 @@ class Message(Base):
     )
 
     ai_summary: Mapped[str | None] = mapped_column(
-        Text,
+            Text,
+            nullable=True,
+        )
+    
+    ai_category: Mapped[str | None] = mapped_column(
+        String(50),
         nullable=True,
-    )
+        )
+    
+    ai_priority: Mapped[str | None] = mapped_column(
+            String(20),
+            nullable=True,
+        )
+    
+    ai_intent: Mapped[str | None] = mapped_column(
+            String(50),
+            nullable=True,
+
+        )
+    
+    ai_action_required: Mapped[bool] = mapped_column(
+            default=False,
+            nullable=False,
+
+        )
+    
+    ai_processed: Mapped[bool] = mapped_column(
+            default=False,
+            nullable=False,
+            
+        )
 
     received_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow,

@@ -43,6 +43,11 @@ class MessageResponse(BaseModel):
     is_read: bool
     is_important: bool
     ai_summary: str | None
+    ai_category: str | None
+    ai_priority: str | None
+    ai_intent: str | None
+    ai_action_required: bool
+    ai_processed: bool
     received_at: datetime
     created_at: datetime
 
