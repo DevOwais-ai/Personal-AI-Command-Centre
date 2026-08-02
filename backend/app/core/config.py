@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
 
     DATABASE_URL: str
+    
+    OPENAI_API_KEY: str | None = None
+
+    GEMINI_API_KEY: str
+    AI_PROVIDER: str = "gemini"
+    GEMINI_MODEL: str = "gemini-3.6-flash"
 
     API_PREFIX: str = "/api"
 
