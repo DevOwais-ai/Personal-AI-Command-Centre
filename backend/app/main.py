@@ -17,6 +17,8 @@ from app.api.reminders import router as reminders_router
 
 from app.api.contacts import router as contacts_router
 
+from app.api.conversations import router as conversations_router
+
 setup_logging()
 
 
@@ -77,6 +79,11 @@ app.include_router(
     prefix=settings.API_PREFIX,
 )
 
+app.include_router(
+    conversations_router,
+    prefix=settings.API_PREFIX,
+)
+
 @app.get("/")
 def root():
     return {
@@ -85,4 +92,5 @@ def root():
         "environment": settings.APP_ENV,
         "status": "running",
     }
+
 

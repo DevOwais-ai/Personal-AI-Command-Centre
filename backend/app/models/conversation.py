@@ -20,6 +20,12 @@ class Conversation(Base):
         index=True,
     )
 
+    integration_id: Mapped[int | None] = mapped_column(
+        ForeignKey("integrations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     contact_id: Mapped[int | None] = mapped_column(
         ForeignKey("contacts.id", ondelete="SET NULL"),
         nullable=True,
@@ -72,6 +78,11 @@ class Conversation(Base):
 
     contact = relationship(
         "Contact",
+        back_populates="conversations",
+    )
+
+    integration = relationship(
+        "Integration",
         back_populates="conversations",
     )
 
