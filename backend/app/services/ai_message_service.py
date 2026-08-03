@@ -214,3 +214,39 @@ def process_all_pending_ai_messages(
             )
 
     return processed_count
+
+def retry_failed_ai_messages(
+    db: Session,
+    limit: int = 10,
+) -> int:
+
+    messages = (
+        db.query(Message)
+        .filter(
+            Message.ai_processed.is_(False),
+            Message.ai_status == "failed",
+        )
+        .order_by(Message.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+    retried_count = 0
+
+    for message in messages:
+        try:
+            retry_ai_analysis(
+                db=db,
+                message=message,
+            )
+
+            if message.ai_status == "completed":
+                retried_count += 1
+
+        except Exception as exc:
+            print(
+                f"Retry failed for message "
+                f"{message.id}: {exc}"
+            )
+
+    return retried_count
