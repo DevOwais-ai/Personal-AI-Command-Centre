@@ -137,3 +137,9 @@ class Message(Base):
         "Conversation",
         back_populates="messages",
     )
+
+    ai_actions = relationship(
+        "AIAction",
+        back_populates="message",
+        cascade="all, delete-orphan",
+    )

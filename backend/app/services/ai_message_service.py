@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 
 from app.ai.factory import get_ai_provider
 from app.models.message import Message
+from app.services.action_dispatcher import dispatch_action
+from app.services.action_executor import execute_action
+
 from app.schemas.ai_message import (
     AIMessageAnalysis,
     AIMessageAnalysisResponse,
@@ -29,6 +32,19 @@ def save_ai_analysis(
 
     db.commit()
     db.refresh(message)
+
+    action_type = dispatch_action(
+    db=db,
+    message=message,
+    )
+
+    if action_type:
+        execute_action(
+            db=db,
+            message=message,
+            action_type=action_type,
+            action_data=analysis.action_data,
+        )
 
     return AIMessageAnalysisResponse(
     message_id=message.id,

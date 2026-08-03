@@ -17,6 +17,12 @@ class AIAction(Base):
         index=True,
     )
 
+    message_id: Mapped[int] = mapped_column(
+        ForeignKey("messages.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
     action_type: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -62,5 +68,9 @@ class AIAction(Base):
 
     user = relationship(
         "User",
+        back_populates="ai_actions",
+    )
+    message = relationship(
+        "Message",
         back_populates="ai_actions",
     )
