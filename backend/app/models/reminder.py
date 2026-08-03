@@ -33,7 +33,7 @@ class Reminder(Base):
     )
 
     remind_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
     )
 
@@ -50,7 +50,7 @@ class Reminder(Base):
     )
 
     sent_at: Mapped[datetime | None] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=True,
     )
 

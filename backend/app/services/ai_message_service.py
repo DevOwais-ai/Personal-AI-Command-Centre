@@ -178,3 +178,39 @@ def process_pending_ai_messages(
             )
 
     return processed_count
+
+def process_all_pending_ai_messages(
+    db: Session,
+    limit: int = 10,
+) -> int:
+
+    messages = (
+        db.query(Message)
+        .filter(
+            Message.ai_processed.is_(False),
+            Message.ai_status == "pending",
+        )
+        .order_by(Message.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+    processed_count = 0
+
+    for message in messages:
+        try:
+            analyze_and_save_message(
+                db=db,
+                message=message,
+            )
+
+            if message.ai_status == "completed":
+                processed_count += 1
+
+        except Exception as exc:
+            print(
+                f"Failed to process message "
+                f"{message.id}: {exc}"
+            )
+
+    return processed_count

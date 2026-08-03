@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from google import genai
 
@@ -21,7 +22,11 @@ class GeminiProvider(AIProvider):
         message: str,
     ) -> AIMessageAnalysis:
 
-        current_datetime = datetime.now().isoformat()
+        user_timezone = ZoneInfo(settings.APP_TIMEZONE)
+
+        current_datetime = datetime.now(
+            user_timezone
+        ).isoformat()
 
         prompt = f"""
         {MESSAGE_ANALYSIS_SYSTEM_PROMPT}
@@ -29,9 +34,16 @@ class GeminiProvider(AIProvider):
         Current date and time:
         {current_datetime}
 
-        Use this date/time as the reference when resolving relative
-        expressions such as "today", "tomorrow", "next Monday",
-        or "in two hours".
+        Timezone:
+        {settings.APP_TIMEZONE}
+
+        The date and time above are in the user's local timezone.
+
+        When resolving expressions such as "today", "tomorrow",
+        "next Monday", "at 10 AM", or "in two hours", interpret
+        them in the user's local timezone.
+
+        Do not assume UTC for a user's stated local time.
 
         Message to analyze:
         {message}

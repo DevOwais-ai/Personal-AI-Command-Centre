@@ -16,6 +16,8 @@ class Settings(BaseSettings):
 
     API_PREFIX: str = "/api"
 
+    APP_TIMEZONE: str = "Asia/Karachi"
+    
     CORS_ORIGINS: str = "http://localhost:3000"
 
     JWT_SECRET_KEY: str
