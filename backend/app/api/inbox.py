@@ -22,10 +22,15 @@ from app.schemas.ai_message import (
     AIMessageAnalysis,
     AIMessageAnalysisResponse,
 )
+
 from app.services.ai_message_service import (
     analyze_and_save_message,
+    get_pending_ai_messages,
+    process_pending_ai_messages,
+    retry_ai_analysis,
     save_ai_analysis,
 )
+
 
 router = APIRouter(
     prefix="/inbox",
@@ -182,10 +187,40 @@ def unimportant_message(
         message=message,
     )
 
+@router.get(
+    "/messages/{message_id}/analysis",
+    response_model=AIMessageAnalysisResponse,
+)
+def get_message_ai_analysis(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found.",
+        )
+
+    return AIMessageAnalysisResponse(
+        message_id=message.id,
+        ai_summary=message.ai_summary,
+        ai_category=message.ai_category,
+        ai_priority=message.ai_priority,
+        ai_intent=message.ai_intent,
+        ai_action_required=message.ai_action_required,
+        ai_processed=message.ai_processed,
+    )
 
 @router.patch(
     "/messages/{message_id}/analysis",
-    response_model=InboxMessageResponse,
+    response_model=AIMessageAnalysisResponse,
 )
 def analyze_message(
     message_id: int,
@@ -246,3 +281,55 @@ def analyze_message_with_ai(
         ai_action_required=message.ai_action_required,
         ai_processed=message.ai_processed,
     )
+
+@router.post(
+    "/messages/{message_id}/retry-ai",
+    response_model=InboxMessageResponse,
+)
+def retry_message_ai_analysis(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    message = get_message(
+        db=db,
+        user_id=current_user.id,
+        message_id=message_id,
+    )
+
+    if message is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Message not found.",
+        )
+
+    try:
+        return retry_ai_analysis(
+            db=db,
+            message=message,
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
+
+@router.post("/ai/process-pending")
+def process_pending_messages(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    limit = min(max(limit, 1), 50)
+
+    processed_count = process_pending_ai_messages(
+        db=db,
+        user_id=current_user.id,
+        limit=limit,
+    )
+
+    return {
+        "message": "Pending AI messages processed.",
+        "processed_count": processed_count,
+    }

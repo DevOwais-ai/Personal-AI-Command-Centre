@@ -2,7 +2,10 @@ from sqlalchemy.orm import Session
 
 from app.ai.factory import get_ai_provider
 from app.models.message import Message
-from app.schemas.ai_message import AIMessageAnalysis
+from app.schemas.ai_message import (
+    AIMessageAnalysis,
+    AIMessageAnalysisResponse,
+)
 
 
 def save_ai_analysis(
@@ -27,7 +30,15 @@ def save_ai_analysis(
     db.commit()
     db.refresh(message)
 
-    return message
+    return AIMessageAnalysisResponse(
+    message_id=message.id,
+    ai_summary=message.ai_summary,
+    ai_category=message.ai_category,
+    ai_priority=message.ai_priority,
+    ai_intent=message.ai_intent,
+    ai_action_required=message.ai_action_required,
+    ai_processed=message.ai_processed,
+    )
 
 
 def analyze_and_save_message(
@@ -81,3 +92,73 @@ def analyze_and_save_message(
         )
 
         return message
+
+def retry_ai_analysis(
+    db: Session,
+    message: Message,
+) -> Message:
+
+    if message.ai_status != "failed":
+        raise ValueError(
+            "Only failed messages can be retried."
+        )
+
+    message.ai_processed = False
+    message.ai_status = "pending"
+
+    db.commit()
+    db.refresh(message)
+
+    return analyze_and_save_message(
+        db=db,
+        message=message,
+    )
+
+def get_pending_ai_messages(
+    db: Session,
+    user_id: int,
+    limit: int = 10,
+) -> list[Message]:
+    return (
+        db.query(Message)
+        .filter(
+            Message.user_id == user_id,
+            Message.ai_processed.is_(False),
+            Message.ai_status == "pending",
+        )
+        .order_by(Message.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+def process_pending_ai_messages(
+    db: Session,
+    user_id: int,
+    limit: int = 10,
+) -> int:
+
+    messages = get_pending_ai_messages(
+        db=db,
+        user_id=user_id,
+        limit=limit,
+    )
+
+    processed_count = 0
+
+    for message in messages:
+        try:
+            analyze_and_save_message(
+                db=db,
+                message=message,
+            )
+
+            if message.ai_status == "completed":
+                processed_count += 1
+
+        except Exception as exc:
+            print(
+                f"Failed to process message "
+                f"{message.id}: {exc}"
+            )
+
+    return processed_count

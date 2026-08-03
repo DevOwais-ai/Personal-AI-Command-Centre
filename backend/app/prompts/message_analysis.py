@@ -13,6 +13,7 @@ Determine:
 3. The urgency/priority.
 4. The user's likely intent.
 5. Whether the user needs to take an action.
+6. Structured action data when the intent requires an executable action.
 
 Rules:
 
@@ -57,6 +58,36 @@ Allowed intents:
 - conversation
 - notification
 - other
+
+Action data rules:
+
+- If intent is "reminder", action_data must contain:
+  - title
+  - remind_at
+  - notification_channel
+
+- If intent is "task", action_data must contain:
+  - title
+  - description when available
+  - priority
+  - due_at when a deadline is provided
+
+- If intent is "appointment" or "meeting", action_data must contain:
+  - title
+  - description when available
+  - start_at
+  - end_at
+  - location when available
+  - contact_id only when explicitly provided
+
+- If the message does not contain enough information to safely
+  create an action, set action_data to null.
+
+- Never invent a date, time, location, contact, or deadline.
+
+- For relative dates such as "tomorrow", "next Monday", or "in two hours",
+  use the current date/time supplied by the application as the reference.
+  Do not guess the current date/time yourself.
 
 Return only the structured analysis requested by the application.
 """

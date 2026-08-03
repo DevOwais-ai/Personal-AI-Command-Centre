@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from google import genai
 
 from app.ai.base import AIProvider
@@ -5,6 +7,7 @@ from app.core.config import settings
 from app.schemas.ai_message import AIMessageAnalysis
 
 from app.prompts.message_analysis import MESSAGE_ANALYSIS_SYSTEM_PROMPT
+
 
 class GeminiProvider(AIProvider):
 
@@ -18,12 +21,20 @@ class GeminiProvider(AIProvider):
         message: str,
     ) -> AIMessageAnalysis:
 
+        current_datetime = datetime.now().isoformat()
+
         prompt = f"""
         {MESSAGE_ANALYSIS_SYSTEM_PROMPT}
 
+        Current date and time:
+        {current_datetime}
+
+        Use this date/time as the reference when resolving relative
+        expressions such as "today", "tomorrow", "next Monday",
+        or "in two hours".
+
         Message to analyze:
         {message}
-
         """
 
         response = self.client.models.generate_content(

@@ -7,7 +7,6 @@ from app.models.message import Message
 from app.schemas.message import MessageCreate
 
 
-
 def create_message(
     db: Session,
     user_id: int,

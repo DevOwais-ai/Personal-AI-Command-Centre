@@ -63,3 +63,23 @@ def get_user_reminders(
         .order_by(Reminder.remind_at.asc())
         .all()
     )
+
+def create_reminder(
+    db: Session,
+    user_id: int,
+    data: ReminderCreate,
+) -> Reminder:
+
+    reminder = Reminder(
+        user_id=user_id,
+        title=data.title,
+        remind_at=data.remind_at,
+        notification_channel=data.notification_channel,
+        status="pending",
+    )
+
+    db.add(reminder)
+    db.commit()
+    db.refresh(reminder)
+
+    return reminder
