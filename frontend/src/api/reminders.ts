@@ -22,10 +22,11 @@ export interface CreateReminderData {
 }
 
 export async function createReminder(
+  appointmentId: number,
   data: CreateReminderData
 ): Promise<Reminder> {
   const response = await apiClient.post<Reminder>(
-    "/reminders",
+    `/reminders/appointments/${appointmentId}`,
     data
   );
 

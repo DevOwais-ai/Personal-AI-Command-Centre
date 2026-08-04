@@ -13,7 +13,7 @@ from app.services.reminder_service import (
     create_appointment_reminder,
     get_user_reminders,
 )
-
+from datetime import timezone
 
 router = APIRouter(
     prefix="/reminders",
@@ -46,7 +46,14 @@ def create_reminder_for_appointment(
             detail="Appointment not found.",
         )
 
-    if data.remind_at >= appointment.start_at:
+    appointment_start = appointment.start_at
+
+    if appointment_start.tzinfo is None:
+        appointment_start = appointment_start.replace(
+            tzinfo=timezone.utc
+        )
+
+    if data.remind_at >= appointment_start:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Reminder must be before the appointment.",

@@ -32,13 +32,17 @@ export interface InboxStats {
 }
 
 export async function getInboxMessages(): Promise<Message[]> {
-  const response = await apiClient.get<Message[]>("/inbox");
+  const response = await apiClient.get<Message[]>(
+    "/inbox/messages"
+  );
 
   return response.data;
 }
 
 export async function getInboxStats(): Promise<InboxStats> {
-  const response = await apiClient.get<InboxStats>("/inbox/stats");
+  const response = await apiClient.get<InboxStats>(
+    "/inbox/stats"
+  );
 
   return response.data;
 }
@@ -47,7 +51,7 @@ export async function markMessageRead(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.patch<Message>(
-    `/inbox/${messageId}/read`
+    `/inbox/messages/${messageId}/read`
   );
 
   return response.data;
@@ -57,7 +61,7 @@ export async function markMessageUnread(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.patch<Message>(
-    `/inbox/${messageId}/unread`
+    `/inbox/messages/${messageId}/unread`
   );
 
   return response.data;
@@ -67,7 +71,7 @@ export async function markMessageImportant(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.patch<Message>(
-    `/inbox/${messageId}/important`
+    `/inbox/messages/${messageId}/important`
   );
 
   return response.data;
@@ -77,7 +81,7 @@ export async function markMessageNotImportant(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.patch<Message>(
-    `/inbox/${messageId}/unimportant`
+    `/inbox/messages/${messageId}/unimportant`
   );
 
   return response.data;
@@ -87,7 +91,7 @@ export async function analyzeMessage(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.post<Message>(
-    `/inbox/${messageId}/ai/analyze`
+    `/inbox/messages/${messageId}/analyze`
   );
 
   return response.data;
@@ -97,7 +101,7 @@ export async function retryAIAnalysis(
   messageId: number
 ): Promise<Message> {
   const response = await apiClient.post<Message>(
-    `/inbox/${messageId}/ai/retry`
+    `/inbox/messages/${messageId}/retry-ai`
   );
 
   return response.data;
